@@ -1,0 +1,314 @@
+/* all query function goes on this case call
+right and privileges goes to ishc community at large */
+
+
+@media(min-width:991px){
+    .ul-call-flex-mobile{
+        display: none;
+    }
+    .nav-view-controller-mobile{
+        display: none;
+    }
+    .menu-visibility{
+        display: none;
+    }
+    .intro{
+        display: none;
+    }
+    /* .length-mobile{
+        display: none!important;
+    } */
+}
+
+
+/* @media only screen and (max-width:785px){
+    .padding-top-align{
+        margin-top: -15px!important;
+    }
+} */
+
+@media(max-width:991px){
+    .nav-view-controller{
+        display: none!important; 
+    }
+    .donor_right,.donor_left{
+        height:100vh;
+        flex:100%!important;
+    }
+    .paymentviewcollection{
+        position: fixed;
+         top: 0;
+         display: none;
+         bottom:0!important;
+         height:100vh;
+         width:100%;
+         background: rgba(0, 0, 0, 0.4);
+         z-index: 9999;
+      }
+      
+      .related{
+          display:block!important;
+          background:#fff!important;
+          padding:20px;
+          position:relative!important;
+      }
+      .related::before{
+          content: ""!important;
+          background:#247062;
+          position:absolute!important;
+          top:0;
+          right:0;
+          left:0;
+          width:100%;
+          height:2px!important;
+      }
+      .frame-dispal{
+          display:block!important;
+      }
+
+      .paymentviewheader{
+        padding-top: 50px;
+      }
+
+      .paymentviewbody{
+        position: absolute;
+        background: #fff;
+        width: 80%;
+        top:initial!important;
+        bottom: 0!important;
+        height: 500px;
+        border-radius: 15px;
+        padding: 25px;
+      }
+     
+      .paymentscroll{
+        overflow-y: auto ;
+        margin-right: 0px!important;
+      }
+     
+      .card-fill-letter{
+        display: none;
+        height: 0px!important;
+      }
+      .field-call::after{
+        display: none;
+      }
+      .fill-tvt{
+        position:absolute;
+        z-index: -1;
+      }
+      .pvb-container{
+        font-size: 11px;
+        width: 100!important;
+        margin-left: -10px!important;
+      }
+      .paymentbody{
+        margin-top: -20px;
+      }
+     .field-call{
+        height: 0px!important;
+        margin-top: 63px;
+     }
+
+      .mediapayview{
+        position: absolute;
+        background: #fff!important;
+      }
+    
+      .btn-donate{
+        width: 90%!important;
+
+      }
+
+
+    .state-bend{
+        height: auto;
+        margin-top: -100px;
+    }
+
+    .cookie-class-design{
+        background: #fff;
+        width: auto;
+        height:auto;
+        padding:30px;
+        z-index:99;
+        position: fixed;
+        right:10px;
+        left:10px;
+        bottom: 50px;
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        gap: 12px;
+        border: 2px solid #247062;
+    }
+
+    .login-right-header{
+        padding-top: 35px!important;
+        display: flex;
+        justify-content: space-between;
+    }
+    .login-flex-left, .login-flex-right{
+        flex:100%!important;
+        width:auto;
+    }
+    .blog-div-contain-box{
+        padding: 20px!important;
+    }
+ 
+    .blog-hero{
+        padding-left: 20px!important;
+        height: 80vh!important;
+        padding-bottom: 20px;
+    }
+    .flex-forgot-pass{
+        display: flex;
+        /* justify-content: center!important; */
+        padding-bottom: 30px;
+        margin-top: -20px!important;
+      }
+    .blog-body{
+        position:absolute;
+        bottom: 60px!important;
+    }
+    .blog-control-letter-header{
+        font-size: 40px!important;
+        width: 80%!important;
+    }
+    .project-padding-code{
+        display: flex!important;
+        width:100%!important;
+    }
+    .project-content{
+        padding-left: 12px!important;
+        width:100%!important;
+    }
+    .project-fluid{
+        width:100%;
+        height:120px!important;
+    }
+    .fixed, .fixed-set{
+       display: none!important;
+    }
+    .image-reflect-bottom{
+        position: absolute!important;
+        top: 0!important;
+        right: 0!important;
+        transform: rotate(180deg);
+    }
+    .pre-view-content{
+        width: 200px!important;
+        text-wrap: wrap;
+    }
+    .projects{
+        position: relative;
+        padding: 20px!important;
+        background: #fff;
+       }
+       .donate-flex-text{
+        font-size:11px;
+       }
+    .pre-width1, .pre-width2{
+        flex:100%;
+    }
+    .fund-category-body{
+        padding:20px!important;
+    }
+    .fund-category-header{
+        text-align: center!important;
+    }
+    .fund-header-text{
+        color:#247062;
+        font-weight: bold;
+        font-size: 30px!important;
+    }
+    .footer-body{
+        padding:10px!important;
+    }
+    .footer-footer-col{
+        width:calc(100% - 0px);
+        text-align: center!important;
+    }
+    .font-review{
+        font-size: 25px!important;
+    }
+    .font-review-small{
+        font-size: 15px!important;
+    }
+    .btn-min-large{
+        width: 100%!important;
+    }
+    .start-kit-center{
+        text-align: center;
+    }
+    .section-call{
+        height: auto!important;
+        width:100%;
+        background: #247062;
+    }
+    .blog-flex-left, .blog-flex-right{
+        flex:100%!important;
+    }
+    .content-header-flex{
+        padding-left:10px!important;
+        padding-right:10px!important;
+        padding-top: 30px!important;
+    }
+    .blog-flex-left{
+        height:100vh!important;
+        width: 100%;
+        flex:40%;
+        position: relative;
+    }
+    .letter-col{
+        width: calc(50% - -0px)!important;
+        text-align: center;
+    }
+    .col-form{
+        width: calc(100% - 0px)!important;
+    }
+
+    .flex-body-left, .flex-body-right{
+        flex: 100%!important;
+      }
+      .left-container{
+        padding-top: 80px;
+        margin: 30px!important;
+      }
+      .img-top-fill{
+        position: absolute!important;
+        top: 150px!important;
+      }
+      .section-body{
+        padding:10px!important;
+        text-align: start!important;
+    }
+      .padding-top-align{
+        margin-top: 100px!important;
+        text-align: start;
+    }
+    .w-format-text{
+        width: 100%!important;
+    }
+    .nav-view-controller-mobile{
+        display: none;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 100vh;
+        width: 100%;
+        background: #fff;
+    }
+    .ul-call-flex-mobile{
+        display: flex;
+        justify-content: space-between;
+        flex-direction: column;
+        left:0;
+        top: 7rem;
+        right: 0;
+        position: absolute;
+ 
+    }
+  
+}

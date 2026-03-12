@@ -1,0 +1,16 @@
+@media(max-width:991px){
+    .aside-main-reserve{
+        display:none;
+    }
+
+    .post-listing-body{
+        width: 90%;
+        height:  auto;
+        background: #fff;
+        position: absolute!important;
+        padding-left:20px;
+        padding-right:20px;
+        padding-top: 60px;
+        border-radius: 12px;
+    }
+}

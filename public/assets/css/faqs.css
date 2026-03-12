@@ -1,0 +1,62 @@
+.contentshowletter{
+    display: none;
+    transition: max-height 0.3s ease;
+  }
+  
+  .faqs-container{
+    background: #247062;
+    height: auto;
+    padding:50px;
+  }
+
+  @media(max-width:991px){
+    .faqs-container{
+        padding: 15px;
+    }
+  }
+  
+  
+  .faqs-container-do{
+    display: flex;
+    flex-direction: column;
+  }
+  .bx-plus-circle{
+    cursor: pointer;
+  }
+  .tabsraining-call{
+    border:1px solid #fff;
+    scroll-behavior: smooth;
+    border-radius: 15px;
+  }
+  .tabsraining{
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    padding:25px;
+  }
+  .btn-forex{
+    width: 100%;
+    background-color: #5438DD;
+    color:#fff;
+    box-shadow: 0 8px 32px 0 rgba(45, 56, 209, 0.37)!important;
+  }
+  
+  .btn-forex:hover{
+    width: 100%;
+    background-color: #5438DD;
+    color:#fff;
+    box-shadow: none!important;
+  }
+  .content-body{
+    padding:20px;
+  }
+  .arrow-icon {
+    cursor: pointer;
+    width: 20px;
+    height: 20px;
+    transform: rotate(0deg); /* Initial rotation */
+    transition: transform 0.3s ease; /* Add transition for a smooth rotation */
+  }
+  .arrow-down{
+    transform: rotate(180deg);
+  }
