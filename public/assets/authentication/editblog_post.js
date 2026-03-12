@@ -6,6 +6,21 @@ $(document).ready(function(){
         $('#delete_category').fadeIn();
     });
 
+     // Preview main image
+     $('#image-review').on('change', function () {
+      const input = this;
+      if (input.files && input.files[0]) {
+          const reader = new FileReader();
+          reader.onload = function (e) {
+              $('#imageview').attr('src', e.target.result).show();
+          };
+          reader.readAsDataURL(input.files[0]);
+      } else {
+          $('#imageview').hide(); // optional: hide preview if cleared
+      }
+  });
+
+
    $('.post-dismiss-calling').on('click', function(){
        $('#delete_category').fadeOut();
    });
@@ -19,6 +34,8 @@ $(document).ready(function(){
 
       $('.post-listing-container').fadeOut();
    });
+
+
 
    $(document).on('click', '#deletecall', function(){
     var reference_delete = $('#deleteid').val();
@@ -41,6 +58,20 @@ $(document).ready(function(){
                window.location.href = "";
              }
           },
+          error: function (xhr, status, errorThrown) {
+            console.error('AJAX Error:', { status, errorThrown, response: xhr.responseText });
+            let msg = 'Something went wrong! Please try again.';
+            try {
+                const json = JSON.parse(xhr.responseText);
+                msg = json.message || msg;
+                if (json.errors) {
+                    msg = Object.values(json.errors).flat().join(' • ');
+                }
+            } catch {}
+
+            $('.toast').toast('show');
+            $('#error_message').html(msg);
+        },
           complete:function(){
             button.disabled= false;
             button.textContent = "deleted"
@@ -73,6 +104,7 @@ $(document).ready(function(){
      $('#category_header').text(categoryreview);
      $('#title_header').text(titlereview);
      $('#contents_details').text(contentreview);
+     
 
      $('#titleid').val(titlereview);
      $('#categoryid').val(categoryreview);
@@ -80,85 +112,110 @@ $(document).ready(function(){
      $('.post-listing-container').fadeOut();
    });
 
-    $('#updatecall').on('click', function(){
-        var button = document.getElementById('updatecall');
-        var category = $('#categoryid').val();
-        var title = $('#titleid').val();
-        var content_header = $('#contentsid').val();
-        var content = $('#full-editor .ql-editor').html();
-        var imageArray = [];
-        var formData = new FormData();
-    
+   $('#updatecall').on('click', function () {
+    const $button = $('#updatecall'); // ← use jQuery object from start
+    const category       = $('#categoryid').val()?.trim() || '';
+    const title          = $('#titleid').val()?.trim() || '';
+    const content_header = $('#contentsid').val()?.trim() || '';
+    // Add minutes_header if it exists in edit form
+    const minutes_header = $('#minutes_header').val()?.trim() || ''; 
+    const contentRaw     = $('#full-editor .ql-editor').html() || '';
+    const mainImageFile  = $('#image-review')[0]?.files?.[0]; // may be undefined = keep old
 
-        if(content==""){
-            $('.toast').toast('show');
-            $('#error_message').html('Content is empty');
-            return false;
-        }
-        if(category == "" || title=="" || content_header== ""){
-            $('.toast').toast('show');
-            $('#error_message').html('Required field missing');
-            return false;
-        } 
+    // Basic client validation
+    if (!title || !category || !content_header || !contentRaw.trim()) {
+        $('.toast').toast('show');
+        $('#error_message').html('Required fields are missing');
+        return;
+    }
 
-        uniqueCounter = 1;
-        content = content.replace(/<img src="([^"]+)"/g, function (match, src) {
-          var filename;
-          var extension;
-          var classAttribute = 'class="img-blog-contain" ';
-          // Check if the src is a base64-encoded data URL
-          if (src.startsWith('data:image')) {
-              // If it's a base64-encoded image, generate a unique filename and extension
-              filename = 'image_' + generateUniqueIdentifier();
-              extension = 'png';
-               var base64 = src.split(',')[1];
-              imageArray.push({
-                  filename: filename + '.' + extension,
-                  fileContent: base64, // Since it's already base64-encoded, we don't need to re-encode it
-              });
-          } else {
-              // If it's a regular image URL, no need to process it further
-              // Simply add the img-blog-contain class
-              return '<img ' + classAttribute + 'src="' + src + '"';
-          }
-          // Construct the image URL for both base64-encoded and regular images
-          var imageurl = 'http://ishcommunity.org/blog_stored_images/' + filename + '.' + extension;
-      
-          console.log(imageurl);
-      
-          // Ensure the replaced image element retains the original class and HTML structure
-          return '<img ' + classAttribute + 'src="' + imageurl + '"';
-      });
-      
+    const imageArray = [];
+    let uniqueCounter = 1;
 
-        formData.append('imageArray', JSON.stringify(imageArray));
-        formData.append('category', category);
-        formData.append('title', title);
-        formData.append('content_header', content_header);
-        formData.append('_token', csrf);
-        formData.append('content', content);
-        formData.append('reference_log', reference_log);
-
-        $.ajax({
-            url: urlcall,
-            method: 'POST',
-            data: formData,
-            contentType:false,
-            processData:false,
-            beforeSend:function(){
-                button.disabled = true;
-                button.textContent =  "";
-            },
-            success:function(response){
-              $('.toast').toast('show');
-              $('#error_message').html(response.message);
-              console.log(response.message);
-            },
-            complete:function(){
-                button.disabled = false;
-                button.textContent =  "Update blog";
+    // ───────────────────────────────────────────────
+    // Improved: Only process NEW base64 images — keep existing URLs untouched
+    // ───────────────────────────────────────────────
+    const processedContent = contentRaw.replace(
+        /<img[^>]*src="([^"]+)"[^>]*>/gi,
+        function (match, src) {
+            // Already a saved image URL → just ensure class is there
+            if (!src.startsWith('data:image')) {
+                if (!match.includes('class="img-blog-contain"')) {
+                    return match.replace('<img', '<img class="img-blog-contain"');
+                }
+                return match;
             }
-        })
+            // New pasted/dropped base64 image
+            const base64 = src.split(',')[1] || '';
+            if (!base64) return match; // invalid
+
+            const extension = src.includes('jpeg') || src.includes('jpg') ? 'jpg' : 'png';
+            const filename = `image_${generateUniqueIdentifier()}.${extension}`;
+
+            imageArray.push({
+                filename: filename,
+                fileContent: base64
+            });
+
+            const finalUrl = `${window.location.origin}/blog_top_images/${filename}`;
+            console.log('New image will be saved as:', finalUrl);
+            return `<img class="img-blog-contain" src="${finalUrl}"`;
+        }
+    );
+
+    const formData = new FormData();
+    formData.append('category', category);
+    formData.append('title', title);
+    formData.append('content_header', content_header);
+    formData.append('minutes_header', minutes_header);
+    formData.append('content', processedContent);
+    formData.append('imageArray', JSON.stringify(imageArray));
+    if (mainImageFile) {
+        formData.append('image_top', mainImageFile);
+    }
+    formData.append('_token', csrf);
+    formData.append('reference_log', reference_log); 
+
+    $button
+        .prop('disabled', true)
+        .text('Updating...');
+
+    $.ajax({
+        url: urlcall,
+        method: 'POST',
+        data: formData,
+        contentType: false,
+        processData: false,
+        cache: false,
+        success: function (response) {
+            $('.toast').toast('show');
+            $('#error_message').html(response.message || 'Updated!');
+
+            if (response.status === 'success') {
+                setTimeout(() => {
+                    window.location.reload(); 
+                }, 1200);
+            }
+        },
+        error: function (xhr) {
+            console.error('Update failed:', xhr.responseText);
+            let msg = 'Update failed – please try again';
+            try {
+                const json = JSON.parse(xhr.responseText);
+                msg = json.message || msg;
+                if (json.errors) {
+                    msg = Object.values(json.errors).flat().join(' • ');
+                }
+            } catch {}
+
+            $('.toast').toast('show');
+            $('#error_message').html(msg);
+        },
+        complete: function () {
+            $button
+                .prop('disabled', false)
+                .text('Update blog');
+        }
     });
 
     function generateUniqueIdentifier() {
@@ -166,4 +223,8 @@ $(document).ready(function(){
         return Date.now().toString() + '_' + uniqueCounter++ + '_' + Math.floor(Math.random() * 1000);
     }
 
+
+});
+
+   
 })

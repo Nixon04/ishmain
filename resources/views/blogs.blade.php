@@ -60,12 +60,12 @@
     </div>
   </section>
 
- <section class="blog-full-content-container">
+ <section class="blog-full-content-container ">
     <div class="blog-div-contain-box">
     <div class="row">
         <div class="col-lg-8 col-md-12 col-12 ">
           <div class="context-view-lne frame-dispal">
-              <div class="context-view-lane">
+              <div class="context-view-lane ">
                       <div class="bl-column py-2">
                             <div class="bl-contents mb-4">
                                 <span class="text-dark">By</span>
@@ -77,6 +77,7 @@
                                   <h6 class="text-dark mb-3">
                                 {{substr($sub_content,0,150).'...'}}    
                             </h6>
+
                             </div>
                             
                                 <div class="bl-social" style="gap:30px!important;margin-top:-4px">
@@ -110,12 +111,11 @@
           </div>
           
           
-            <div class="blog-post">
-      
-             {!!$content!!}
-           
-               
+            <div class="blog-post  py-5">
+             {!!$content!!}    
             </div>
+
+
         </div>
         <div class="col-lg-4 col-md-12">
             <div class="bl card-font">
@@ -193,21 +193,18 @@
                                       </div>
                                    </div>
                                        <a href="javascript:void(0)">
-                                       <img src="{{asset('clientArea/'.$entry->image)}}" class="card-image-fluid" alt="">
+                                       <img src="{{$entry->image}}" class="card-image-fluid" alt="">
                                      </a>
                                </div>
                             </div>
                             @endforeach
                             @endif
-
                            </div>
                         </div>
-
-
-            </div>
-        </div>
-    </div>
-   </div>
+                  </div>
+              </div>
+          </div>
+      </div>
  </section>
  
  
@@ -220,6 +217,7 @@
                 
                             @if(count($blog_related)>0)
                             @foreach($blog_related as $entry)
+
                             <div class="card-content-fluid mb-2 card-related-pm">
                                 <div class="card-font-column">
                                      <a href="{{url('/blogs/'.$entry->title)}}" class="footer-link">
@@ -235,7 +233,7 @@
                                       </div>
                                    </div>
                                        <a href="javascript:void(0)">
-                                       <img src="{{asset('clientArea/'.$entry->image)}}" class="card-image-fluid" alt="">
+                                       <img src="{{$entry->image}}" class="card-image-fluid" alt="">
                                      </a>
                                </div>
                             </div>

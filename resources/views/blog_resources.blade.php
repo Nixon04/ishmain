@@ -62,7 +62,7 @@
                                             </div>
                                           </div>
                                       </div>
-                                        <img src="{{asset('clientArea/'.$entry->image)}}" class="new-feed-image wow fadeInUp" alt="">
+                                        <img src="{{$entry->image}}" class="new-feed-image wow fadeInUp" alt="">
                                       </div>
                                       <div class="new-feed-body">
                                       <div class="blog-left-body">

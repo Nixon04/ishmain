@@ -1,85 +1,117 @@
-$(document).ready(function(){
+$(document).ready(function () {
 
-
-    $('#image-review').change(function(){
-       var input = this;
-       if(input.files && input.files[0]){
-        var reader = new FileReader();
-        reader.onload = function(e){
-         $('#imageview').attr('src', e.target.result).show();
+    // Preview main image
+    $('#image-review').on('change', function () {
+        const input = this;
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                $('#imageview').attr('src', e.target.result).show();
+            };
+            reader.readAsDataURL(input.files[0]);
+        } else {
+            $('#imageview').hide(); // optional: hide preview if cleared
         }
-        reader.readAsDataURL(input.files[0]);
-    }
     });
 
+    // Use jQuery object for the button from the start
+    const $submitBtn = $('#submit');
 
-    $('#submit').on('click', function(){
-        var button = document.getElementById('submit');
-        var category = $('#categoryid').val();
-        var title = $('#titleid').val();
-        var content_header = $('#content_header').val();
-        var minutes_header = $('#minutes_header').val();
-        var image_top = document.getElementById('image-review').files[0];
-        var content = $('#full-editor .ql-editor').html();
-        var imageArray = [];
-        var formData = new FormData();
+    $submitBtn.on('click', function (e) {
+        e.preventDefault(); // prevent any default if it's a button inside form
 
-        if(content=="" || title=="" || content_header=="" || minutes_header==""|| image_top=="" || content==""){
+        const category       = $('#categoryid').val().trim();
+        const title          = $('#titleid').val().trim();
+        const content_header = $('#content_header').val().trim();
+        const minutes_header = $('#minutes_header').val().trim();
+        const content        = $('#full-editor .ql-editor').html().trim();
+        const mainImageFile  = $('#image-review')[0].files[0]; // File or undefined
+
+        // Better client-side validation
+        if (!title || !content || !content_header || !minutes_header || !category || !mainImageFile) {
             $('.toast').toast('show');
-            $('#error_message').html('Required field empty');
-            return false;
+            $('#error_message').html('Please fill all required fields and select a main image.');
+            return;
         }
 
-        uniqueCounter = 1;
+        const imageArray = [];
+        let uniqueCounter = 1;
 
-        content = content.replace(/<img src="data:image\/([^;]+);base64,([^"]+)"/g, function (match, type, base64) {
-         var filename = 'image_' + generateUniqueIdentifier();
-         var extension = 'png';
-         imageArray.push({
-            filename: filename + '.' + extension,
-            fileContent: base64,
-         });
+        // Replace inline base64 images
+        const processedContent = content.replace(
+            /<img src="data:image\/([^;]+);base64,([^"]+)"/g,
+            function (match, type, base64) {
+                const extension = type === 'jpeg' ? 'jpg' : type; // better mapping
+                const filename  = `image_${generateUniqueIdentifier()}.${extension}`;
 
-         var imageurl = 'http://ishcommunity.org/blog_stored_images/' + filename + '.' + extension;
+                imageArray.push({
+                    filename: filename,
+                    fileContent: base64
+                });
 
-         console.log(imageurl);
-           
-         return '<img class="img-blog-contain" src="'+ imageurl +'"';
-        });
+                const imageUrl = `${window.location.origin}/blog_top_images/${filename}`;
+                console.log('Replacement URL:', imageUrl);
 
-        formData.append('imageArray', JSON.stringify(imageArray));
+                return `<img class="img-blog-contain" src="${imageUrl}"`;
+            }
+        );
+
+        const formData = new FormData();
         formData.append('category', category);
         formData.append('title', title);
         formData.append('content_header', content_header);
-        formData.append('_token', csrf);
-        formData.append('content', content);
         formData.append('minutes_header', minutes_header);
-        formData.append('image_top', image_top);
+        formData.append('content', processedContent);
+        formData.append('imageArray', JSON.stringify(imageArray));
+        formData.append('image_top', mainImageFile);
+        formData.append('_token', csrf); 
+
+        $submitBtn
+            .prop('disabled', true)
+            .text('Uploading...');
+
         $.ajax({
-            url: urlcall,
+            url: urlcall, 
             method: 'POST',
             data: formData,
-            contentType:false,
-            processData:false,
-            beforeSend:function(){
-            button.disabled=true;
-            button.textContent= "";
+            contentType: false,
+            processData: false,
+            cache: false,
+            success: function (response) {
+                console.log('Success response:', response);
+
+                $('.toast').toast('show');
+                $('#error_message').html(response.message || 'Blog posted!');
+
+                if (response.status === 'success') {
+                    setTimeout(() => {
+                        window.location.href = ''; 
+                    }, 1500);
+                }
             },
-            success:function(response){
-               $('.toast').toast('show');
-               $('#error_message').html(response.message);
-             console.log(response.message);
+            error: function (xhr, status, errorThrown) {
+                console.error('AJAX Error:', { status, errorThrown, response: xhr.responseText });
+                let msg = 'Something went wrong! Please try again.';
+                try {
+                    const json = JSON.parse(xhr.responseText);
+                    msg = json.message || msg;
+                    if (json.errors) {
+                        msg = Object.values(json.errors).flat().join(' • ');
+                    }
+                } catch {}
+
+                $('.toast').toast('show');
+                $('#error_message').html(msg);
             },
-            complete:function(){
-                button.disabled=false;
-                button.textContent = "Upload post"
+            complete: function () {
+                $submitBtn
+                    .prop('disabled', false)
+                    .text('Upload Blog Post');
             }
-        })
+        });
     });
 
     function generateUniqueIdentifier() {
-        // Implement your logic to generate a unique identifier (timestamp, random string, etc.)
-        return Date.now().toString() + '_' + uniqueCounter++ + '_' + Math.floor(Math.random() * 1000);
+        return Date.now() + '_' + uniqueCounter++ + '_' + Math.floor(Math.random() * 10000);
     }
-
-})
+});

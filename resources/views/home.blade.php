@@ -55,13 +55,13 @@
         <div class="flex-body-right d-lg-block d-none">
             <div class="container-xxl flex-flex-contain">
             <div class="flex-right-context">
-                <h4 class="text-white fw-bold mb-3 wow fadeIn">Sign up for GofundMe</h4>
+                <h4 class="text-white fw-bold mb-3 wow fadeIn">Sign up for FundToCare</h4>
                 <span class="text-white">Encounter true love where
                     it belongs...
                 </span>
                 <div class="context-padding">
                     <a href="javascript:void(0)" class="btn btn-ishc-donate-button">
-                        GoFundMe
+                      FundToCare
                     </a>
                 </div>
               </div>
@@ -151,7 +151,6 @@
                                     <a href="{{route('Participate')}}" class="btn btn-ishc-donate-button py-3">Volunteer with us Today</a>
                               </div>
 
-
                             <hr class="my-3">
                         </div>
                     </div>
@@ -176,6 +175,7 @@
         <div class="col-12 col-lg-12 col-md-12">
             
              <div class="blog-flex-container">
+             
              @if($main_view)
               @foreach($main_view as $mainentry)
                 <div class="blog-flex-left" 
@@ -234,7 +234,9 @@
                                             </div>
                                           </div>
                                       </div>
-                                        <img src="{{asset('clientArea/'.$entry->image)}}" class="new-feed-image wow fadeInUp" alt="">
+
+                                  
+                                        <img src="{{ $entry->image }}" class="new-feed-image wow fadeInUp" alt="">
                                       </div>
                                       <div class="new-feed-body">
                                       <div class="blog-left-body">

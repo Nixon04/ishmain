@@ -1382,12 +1382,13 @@ a{
     display: flex;
     flex-wrap: wrap;
 }
+
 .blog-div-contain-box{
     padding-left: 50px;
     padding-right:20px;
     background:#fff;
-  
 }
+
 .bl{
     height:100vh;
     width: 100%;

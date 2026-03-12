@@ -13,8 +13,17 @@
 
 
              <div class="content-post-fill">
-             <div class="label-main mb-3">
-                    <input type="text" placeholder=" " value='{{$category}}' class="form-control py-3" id="category" readonly>
+
+                  <div class="mb-4">
+                        <label for="image-review" class="u-e-upload">Upload image</label> 
+                        <input type="file" image="*" id="image-review" alt="" hidden>
+                  </div>
+                  <img src="#" id="imageview" alt="">
+
+                 </div>
+
+                <div class="label-main mb-3 w-100">
+                    <input type="text" placeholder=" " value='{{$category}}' class="form-control py-3  w-100" id="category" readonly>
                     <span>Category</span>
                  </div>  
 

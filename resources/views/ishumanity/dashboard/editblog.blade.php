@@ -75,7 +75,7 @@
           <div class="content-wrapper ">
             <!-- Content -->
 
-            <div class="container-xxl flex-grow-1 container-p-y">
+            <div class="container-xxl grow container-p-y">
 
                <div class="post-dropdown-edit">
 
@@ -98,10 +98,14 @@
               <div class="row">
                 <div class="col-12 col-lg-12">
                   <div class="card card-body-full">
+
+                   
+
                      <div class="card-fill-sub-header mb-0">
                         <h4 class="" id="category_header">Category header</h4>
                        <h6 class="" id="title_header">Header</h6>
                      </div>
+
                      
                      <div class="input-action-call d-none mb-1">
                         <input type="text" id="categoryid">

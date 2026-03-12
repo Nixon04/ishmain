@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Storage;
 use App\Models\Blog;
 use Carbon\Carbon;
 use App\Models\Category; 
@@ -15,7 +16,10 @@ use App\Models\AccountCollection;
 use App\Models\NewsLetter;
 use App\Mail\ContactMail;
 use Illuminate\Support\Facades\Mail;
-
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class AdminPostController extends Controller
 {
@@ -121,59 +125,243 @@ class AdminPostController extends Controller
       }
     }
 
-    public function BlogPostCall(Request $request){
-      $request->validate([
-        'content' => 'required',
-        'category' => 'required',
-        'imageArray' => 'required',
-        'content_header'=>'required',
-        'minutes_header' => 'required',
-        'image_top' => 'required|file',
-        'title' => 'required'
-      ]);
-
-      $checktitle = Blog::where('title', $request['title'])->first();
-      if($checktitle){
-        return response()->json([
-          'message' => 'Sorry this title already exist'
+    public function BlogEdit(Request $request)
+    {
+        $validator = $request->validate([
+            'reference_log'   => 'required|string|exists:blogs,reference_log',
+            'category'        => 'required|string|max:100',
+            'title'           => 'required|string|max:255',
+            'content_header'  => 'required|string|max:500',
+            'content'         => 'required|string',
+            'minutes_header'  => 'nullable|string|max:100',     
+            'image_top'       => 'nullable|file|mimes:jpg,jpeg,png,gif|max:10240', 
+            'imageArray'      => 'nullable|string',            
         ]);
-      }
-      $imagefile = $request->file('image_top');
-      $filename = $imagefile->getClientOriginalName();
-      $firstpave = $_SERVER['DOCUMENT_ROOT'] . '/clientArea/';
-  
-      $imagefile->move($firstpave, $filename);
+    
+        try {
+            DB::beginTransaction();
+    
+            $blog = Blog::where('reference_log', $request->reference_log)->firstOrFail();
+            $newMainImagePath = $blog->image; // keep old one by default
 
-      $check = json_decode($request->input('imageArray'), true);
-      if(is_array($check)){
-      foreach($check as $entry){
-        $filestamp = $entry['filename'];
-        $pathway = $_SERVER['DOCUMENT_ROOT'] .'/blog_stored_images/';
-        $destination =  $pathway . '/' .$filestamp;
-        file_put_contents($destination, base64_decode($entry['fileContent']));
-      }
-      $username = session::get('members_id');
-      $date = Carbon::now()->setTimeZone('Africa/Lagos')->format('d M, Y');
-      $requestLog = rand(99999999,11111111);
-      $insert = new Blog([
-        'user_id' => $username,
-        'category' => $request->input('category'),
-        'title' => $request->input('title'),
-        'content' => $request->input('content'),
-        'minutes_header' => $request->input('minutes_header'),
-        'reference_log' => $requestLog,
-        'sub_content' => $request->input('content_header'),
-        'date' => $date,
-        'status'=>'approve',
-        'image' => $filename,
-        'updated_date'=>'',
-      ]);
-      $insert->save();
-  }
-      return response()->json([
+            if ($request->hasFile('image_top') && $request->file('image_top')->isValid()) {
+                if ($blog->image) {
+                    Storage::disk('public')->delete("blog_top_images/{$blog->image}");
+                }
+    
+                $newMainImagePath = time() . '_' . Str::random(10) . '.' .
+                    $request->file('image_top')->getClientOriginalExtension();
+    
+                $request->file('image_top')->storeAs(
+                    'blog_top_images',
+                    $newMainImagePath,
+                    'public'
+                );
+            }
+    
         
-        'message' => 'success'
-      ]);
+            $newExtraImages = [];
+            $oldExtraImages = $blog->extra_images ? json_decode($blog->extra_images, true) : [];
+    
+            if ($request->filled('imageArray')) {
+                $imageArray = json_decode($request->input('imageArray'), true);
+    
+                if (json_last_error() !== JSON_ERROR_NONE || !is_array($imageArray)) {
+                    throw new \Exception('Invalid imageArray JSON format');
+                }
+    
+                foreach ($imageArray as $item) {
+                    if (empty($item['filename']) || empty($item['fileContent'])) {
+                        continue;
+                    }
+    
+                    $binary = base64_decode($item['fileContent'], true);
+                    if ($binary === false) {
+                        continue; 
+                    }
+    
+                    $safeName = $item['filename'];
+                    $safeName = preg_replace('/[^a-zA-Z0-9._-]/', '_', $safeName);
+    
+                    Storage::disk('public')->put(
+                        "blog_top_images/{$safeName}",
+                        $binary
+                    );
+    
+                    $newExtraImages[] = $safeName;
+                }
+    
+                foreach ($oldExtraImages as $oldFile) {
+                    Storage::disk('public')->delete("blog_top_images/{$oldFile}");
+                }
+            }
+
+    
+            $blog->update([
+                'category'       => $request->category,
+                'title'          => $request->title,
+                'content_header' => $request->content_header,
+                'content'        => $request->input('content'),
+                'minutes_header' => $request->minutes_header ?? $blog->minutes_header,
+                'image'          => $newMainImagePath,
+                'extra_images'   => json_encode($newExtraImages), 
+                'updated_date'   => now(),
+            ]);
+    
+            DB::commit();
+    
+            return response()->json([
+                'status'  => 'success',
+                'message' => 'Blog updated successfully',
+            ]);
+    
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Blog post not found',
+            ], 404);
+    
+        } catch (\Exception $e) {
+            DB::rollBack();
+    
+            Log::error('Blog edit failed', [
+                'reference_log' => $request->reference_log,
+                'error'         => $e->getMessage(),
+                'trace'         => $e->getTraceAsString(),
+            ]);
+    
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Failed to update blog: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+
+    public function BlogPostCall(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'title'           => 'required|string|max:255',
+            'content'         => 'required|string',
+            'content_header'  => 'required|string|max:500',
+            'minutes_header'  => 'required|string|max:100',
+            'category'        => 'required|string|max:100',
+            'image_top'       => 'required|file|mimes:jpg,jpeg,png,gif|max:10240', // 10MB
+            'imageArray'      => 'nullable|string', // ← we expect JSON string
+        ], [
+            'image_top.required' => 'Main highlight image is required.',
+            'image_top.max'      => 'Main image must not exceed 10MB.',
+            'image_top.mimes'    => 'Main image must be jpg, jpeg, png or gif.',
+        ]);
+    
+        if ($validator->fails()) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => $validator->errors()->first(),
+                'errors'  => $validator->errors()->all(),
+            ]);
+        }
+    
+        // Optional: more strict title uniqueness (case-insensitive)
+        $titleExists = Blog::whereRaw('LOWER(title) = ?', [strtolower($request->title)])->exists();
+        if ($titleExists) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'A blog with this title already exists.',
+            ]);
+        }
+    
+        try {
+            DB::beginTransaction();
+    
+            // 1. Handle main image
+            $mainImage = $request->file('image_top');
+            $mainFilename = time() . '_' . Str::random(8) . '.' . $mainImage->getClientOriginalExtension();
+            $mainImage->storeAs('blog_top_images', $mainFilename, 'public');
+    
+            // 2. Handle additional images (base64)
+            $extraImages = [];
+            $imageArrayJson = $request->input('imageArray');
+    
+            if ($imageArrayJson) {
+                $imageArray = json_decode($imageArrayJson, true);
+    
+                if (json_last_error() !== JSON_ERROR_NONE || !is_array($imageArray)) {
+                    throw new \Exception('Invalid imageArray format.');
+                }
+    
+                $allowedMime = ['image/jpeg', 'image/png', 'image/gif'];
+                $maxSize = 10 * 1024 * 1024; // 10MB
+    
+                foreach ($imageArray as $item) {
+                    if (empty($item['filename']) || empty($item['fileContent'])) {
+                        continue;
+                    }
+    
+                    $binary = base64_decode($item['fileContent'], true);
+                    if ($binary === false) {
+                        throw new \Exception('Invalid base64 content in additional images.');
+                    }
+    
+                    $finfo = finfo_open(FILEINFO_MIME_TYPE);
+                    $mime = finfo_buffer($finfo, $binary);
+                    finfo_close($finfo);
+    
+                    if (!in_array($mime, $allowedMime)) {
+                        throw new \Exception('Only JPG, PNG, GIF allowed in additional images.');
+                    }
+    
+                    if (strlen($binary) > $maxSize) {
+                        throw new \Exception('Additional image exceeds 10MB limit.');
+                    }
+    
+                    $ext = pathinfo($item['filename'], PATHINFO_EXTENSION);
+                    $safeName = Str::random(12) . '.' . strtolower($ext);
+    
+                    Storage::put("public/blog_extra_images/{$safeName}", $binary);
+    
+                    $extraImages[] = $safeName;
+                }
+            }
+    
+            $blog = Blog::create([
+                'user_id'        =>  $request->user()?->id ?? session('members_id'),
+                'category'       => $request->category,
+                'title'          => trim($request->title),
+                'sub_content'    => $request->content_header,
+                'content'        => $request->input('content'),         
+                'date'           => Carbon::now('Africa/Lagos')->format('d M, Y'),
+                'reference_log'  => (string) Str::uuid(),
+                'minutes_header' => $request->minutes_header,
+                'status'         => 'approve',                
+                'image'          => $mainFilename,
+                'extra_images'   => json_encode($extraImages),   
+                'updated_date'   => now(),
+            ]);
+    
+            DB::commit();
+    
+            return response()->json([
+                'status'  => 'success',
+                'message' => 'Blog post created successfully.',
+                'data'    => ['id' => $blog->id, 'slug' => Str::slug($blog->title)],
+            ]);
+    
+        } catch (\Exception $e) {
+            DB::rollBack();
+    
+            Log::error('Blog creation failed', [
+                'error' => $e->getMessage(),
+                'line'  => $e->getLine(),
+                'file'  => $e->getFile(),
+                'input' => $request->except(['image_top', 'imageArray']),
+            ]);
+    
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Failed to create blog post. Please try again.',
+            ]);
+        }
     }
 
 
@@ -349,44 +537,7 @@ class AdminPostController extends Controller
        ]);
     }
 
-    public function BlogEdit(Request $request){
-      $request->validate([
-        'category' => 'required',
-        'title' => 'required',
-        'content_header' => 'required',
-        'content' => 'required',
-        'imageArray' => 'required',
-        'reference_log' => 'required'
-      ]);
-
-      $check = json_decode($request->input('imageArray'), true);  
-      if(is_array($check)){
-      foreach($check as $entry){
-        $filestamp = $entry['filename'];
-        
-        $pathway = $_SERVER['DOCUMENT_ROOT'] . '/blog_stored_images/';
-        $destination = $pathway . '/' .$filestamp;
-        file_put_contents($destination, base64_decode($entry['fileContent']));
-      }
-      
-      $updateblog = Blog::where('reference_log', $request['reference_log'])->first();
-      if($updateblog){
-        $updateblog->update([
-          'title' => $request->input('title'),
-          'content_header' => $request->input('content_header'),
-          'content' => $request->input('content'),
-        ]);
-        return response()->json([
-          'message' => 'Blog updated successfully'
-         ]);
-      }else{
-        return response()->json([
-          'message' => 'Not successfully'
-         ]);
-      }
-    }  
-   }
-
+  
    public function SubmitPartnership(Request $request){
     $request->validate([
       'email' => 'required',

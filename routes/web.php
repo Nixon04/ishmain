@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\File;
 
 use App\Http\Controllers\viewController;
 use App\Http\Controllers\viewAdminController;
@@ -9,6 +10,37 @@ use App\Http\Controllers\phpini;
 // Route::get('/', function () {
 //     return view('welcome');
 // });
+
+
+
+Route::get('/blog_top_images/{filename}', function ($filename) {
+
+    $filename = basename($filename);
+  
+    $path = storage_path('app/public/blog_top_images/' . $filename);
+  
+    if (!File::exists($path)) {
+        abort(403, 'Image Not Found');
+    }
+  
+    $mime = File::mimeType($path);
+    $allowed = [
+        'image/png',
+        'image/jpeg',
+        'image/jpg',
+        'image/gif'
+    ];
+
+    if (!in_array($mime, $allowed)) {
+        abort(403, 'Invalid file type');
+    }
+  
+    return response()->file($path, [
+        'Cache-Control' => 'public, max-age=86400',
+    ]);
+  
+  })->name('blog_top_images');
+
 
 // view controller for public first view
 Route::get('/', [viewController::class, 'ViewControl'])->name('ViewControl');
