@@ -15,10 +15,10 @@
              <div class="content-post-fill">
 
                   <div class="mb-4">
-                        <label for="image-review" class="u-e-upload">Upload image</label> 
-                        <input type="file" image="*" id="image-review" alt="" hidden>
+                        <label for="image-reviews" class="u-e-upload">Upload image</label> 
+                        <input type="file" image="*" id="image-reviews" alt="" hidden>
                   </div>
-                  <img src="#" id="imageview" alt="">
+                  <img src="#" id="imageviews" alt="">
 
                  </div>
 

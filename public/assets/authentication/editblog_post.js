@@ -7,16 +7,16 @@ $(document).ready(function(){
     });
 
      // Preview main image
-     $('#image-review').on('change', function () {
+     $('#image-reviews').on('change', function () {
       const input = this;
       if (input.files && input.files[0]) {
           const reader = new FileReader();
           reader.onload = function (e) {
-              $('#imageview').attr('src', e.target.result).show();
+              $('#imageviews').attr('src', e.target.result).show();
           };
           reader.readAsDataURL(input.files[0]);
       } else {
-          $('#imageview').hide(); // optional: hide preview if cleared
+          $('#imageviews').hide(); // optional: hide preview if cleared
       }
   });
 
