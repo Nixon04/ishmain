@@ -144,6 +144,8 @@ class AdminPostController extends Controller
             $blog = Blog::where('reference_log', $request->reference_log)->firstOrFail();
             $newMainImagePath = $blog->image; // keep old one by default
 
+            $fileimage = $request->input('image_top');
+
             if ($request->hasFile('image_top') && $request->file('image_top')->isValid()) {
                 if ($blog->image) {
                     Storage::disk('public')->delete("blog_top_images/{$blog->image}");
@@ -151,12 +153,14 @@ class AdminPostController extends Controller
     
                 $newMainImagePath = time() . '_' . Str::random(10) . '.' .
                     $request->file('image_top')->getClientOriginalExtension();
+
+                    $fileimage->storeAs('blog_top_images', $newMainImagePath, 'public');
     
-                $request->file('image_top')->storeAs(
-                    'blog_top_images',
-                    $newMainImagePath,
-                    'public'
-                );
+                // $request->file('image_top')->storeAs(
+                //     'blog_top_images',
+                //     $newMainImagePath,
+                //     'public'
+                // );
             }
     
         
