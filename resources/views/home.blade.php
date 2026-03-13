@@ -199,9 +199,9 @@
                     </a>
                   </div>
                     <div class="blog-author-layout">
-                        <span class="text-mute fw-bold">By</span>
-                        <span class="blog-author">{{$mainentry->user_id}}</span>
-                        <span >{{$mainentry->date}}</span>
+                        <span class="text-mute fw-bold">By - </span>
+                        <span class="blog-author">{{$mainentry->user_id}} - </span>
+                        <span >{{$mainentry->date}}.</span>
                     </div>
 
                     <div class="blog-contents">
@@ -245,9 +245,9 @@
                                             </a>
                                           </div>
                                         <div class="news-author-layout text-white wow fadeIn" data-wow-delay="0.3s">
-                                            <span class="text-dark fw-bold">By</span>
-                                            <span class="blog-autho text-dark">{{$entry->user_id}}</span>
-                                            <span class="text-dark">{{$entry->date}}</span>
+                                            <span class="text-dark fw-bold">By - </span>
+                                            <span class="blog-autho text-dark">{{$entry->user_id}} - </span>
+                                            <span class="text-dark">{{$entry->date}}.</span>
                                         </div>
                                       </div>
                                 </div>
@@ -306,15 +306,7 @@
 
 
 @include('components.modal.cookiealerts')
-
-
-
-
- @include('components.navigation.footer')
-
-
-
-
+@include('components.navigation.footer')
 
   </div>
 

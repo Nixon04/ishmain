@@ -120,7 +120,7 @@ $(document).ready(function(){
     // Add minutes_header if it exists in edit form
     const minutes_header = $('#minutes_header').val()?.trim() || ''; 
     const contentRaw     = $('#full-editor .ql-editor').html() || '';
-    const mainImageFile  = $('#image-review')[0]?.files?.[0]; // may be undefined = keep old
+    const mainImageFile  = $('#image-reviews')[0]?.files?.[0]; // may be undefined = keep old
 
     // Basic client validation
     if (!title || !category || !content_header || !contentRaw.trim()) {
@@ -169,16 +169,14 @@ $(document).ready(function(){
     formData.append('content_header', content_header);
     formData.append('minutes_header', minutes_header);
     formData.append('content', processedContent);
+    formData.append('image_top',mainImageFile)
     formData.append('imageArray', JSON.stringify(imageArray));
-    if (mainImageFile) {
-        formData.append('image_top', mainImageFile);
-    }
     formData.append('_token', csrf);
     formData.append('reference_log', reference_log); 
 
     $button
         .prop('disabled', true)
-        .text('Updating...');
+        .text('...');
 
     $.ajax({
         url: urlcall,

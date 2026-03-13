@@ -127,16 +127,30 @@ class AdminPostController extends Controller
 
     public function BlogEdit(Request $request)
     {
-        $validator = $request->validate([
-            'reference_log'   => 'required|string|exists:blogs,reference_log',
+
+
+        $validator = Validator::make($request->all(), [
+          'reference_log'   => 'required|string',
             'category'        => 'required|string|max:100',
             'title'           => 'required|string|max:255',
             'content_header'  => 'required|string|max:500',
             'content'         => 'required|string',
             'minutes_header'  => 'nullable|string|max:100',     
-            'image_top'       => 'nullable|file|mimes:jpg,jpeg,png,gif|max:10240', 
-            'imageArray'      => 'nullable|string',            
+            // 'image_top'       => 'nullable|file|mimes:jpg,jpeg,png,gif|max:10240', 
+            'image_top'       => 'nullable', 
+            'imageArray'      => 'nullable|string', 
         ]);
+
+        if ($validator->fails()) {
+          return response()->json([
+              'status'  => 'error',
+              'message' => $validator->errors()->first(),
+          ]);
+      }
+
+
+      Log::info($request->all());
+  
     
         try {
             DB::beginTransaction();
@@ -154,13 +168,13 @@ class AdminPostController extends Controller
                 $newMainImagePath = time() . '_' . Str::random(10) . '.' .
                     $request->file('image_top')->getClientOriginalExtension();
 
-                    $fileimage->storeAs('blog_top_images', $newMainImagePath, 'public');
+                    // $fileimage->storeAs('blog_top_images', $newMainImagePath, 'public');
     
-                // $request->file('image_top')->storeAs(
-                //     'blog_top_images',
-                //     $newMainImagePath,
-                //     'public'
-                // );
+                $request->file('image_top')->storeAs(
+                    'blog_top_images',
+                    $newMainImagePath,
+                    'public'
+                );
             }
     
         
@@ -240,6 +254,39 @@ class AdminPostController extends Controller
             ], 500);
         }
     }
+
+
+//     public function UploadEditorImage(Request $request)
+// {
+//     $request->validate([
+//         'image' => 'required|image|mimes:jpg,jpeg,png,gif|max:10240'
+//     ]);
+
+//     $file = $request->file('image');
+
+//     $filename = time().'_'.Str::random(10).'.'.$file->getClientOriginalExtension();
+
+//     $file->storeAs('blog_extra_images', $filename, 'public');
+
+//     return response()->json([
+//         'status' => 'success',
+//         'url' => asset("storage/blog_extra_images/".$filename),
+//         'filename' => $filename
+//     ]);
+// }
+
+// public function DeleteEditorImage(Request $request)
+// {
+//     $request->validate([
+//         'filename' => 'required|string'
+//     ]);
+
+//     Storage::disk('public')->delete("blog_extra_images/".$request->filename);
+
+//     return response()->json([
+//         'status' => 'success'
+//     ]);
+// }
 
 
     public function BlogPostCall(Request $request)

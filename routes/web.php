@@ -117,6 +117,9 @@ Route::post('/ishumanity/donationupdate', [AdminPostController::class, 'Paystack
 Route::post('/ishumanity/newsletters', [AdminPostController::class, 'Newsletter'])->name('Newsletter');
 Route::post('/ishumanity/contactaddress', [AdminPostController::class, 'ContactMail'])->name('ContactMail');
 
+Route::post('/editor/upload-image', [AdminPostController::class,'UploadEditorImage'])->name('UploadEditorImage');
+Route::post('/editor/delete-image', [AdminPostController::class,'DeleteEditorImage'])->name('DeleteEditorImage');
+
 
 
 

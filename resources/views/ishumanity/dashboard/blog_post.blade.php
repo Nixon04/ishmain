@@ -138,10 +138,17 @@
     
     <script>
       var urlcall = "{{route('BlogPostCall')}}";
+      var uploadEditorImageUrl = "{{ route('UploadEditorImage') }}";
+      var deleteEditorImageUrl = "{{ route('DeleteEditorImage') }}";
       var csrf = "{{csrf_token()}}";
     </script>
     <script src="{{asset('assets/components/modal_calls/blog_headers.js')}}"></script>
      <script src="{{asset('assets/authentication/blog_post.js')}}"></script>
+
+     <link href="https://cdn.jsdelivr.net/npm/quill@1.3.7/dist/quill.snow.css" rel="stylesheet">
+
+<!-- Quill JS -->
+<script src="https://cdn.jsdelivr.net/npm/quill@1.3.7/dist/quill.min.js"></script>
     
     <script src="{{asset('assets/vendor/libs/quill/katex.js')}}"></script>
     <script src="{{asset('assets/vendor/libs/quill/quill.js')}}"></script>

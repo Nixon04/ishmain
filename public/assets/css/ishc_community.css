@@ -13,6 +13,9 @@
     margin:0;
     padding:0;
 } 
+body,html{
+    overflow-x: hidden;
+}
 
 .img-blog-contain{
     max-width: 100%;
@@ -744,8 +747,8 @@ a{
 }
 .blog-author-layout{
  display: flex;
- gap: 12px;
- color:#fff;
+ gap: 2px;
+ color:#fff!important;
 }
 .blog-contents{
     padding-top: 24px;
@@ -789,7 +792,7 @@ a{
     display: flex;
     text-transform: uppercase;
     padding-left: 15px;
-    gap: 8px;
+    gap: 2px;
     font-size: 11px;
 }
 .new-contents{

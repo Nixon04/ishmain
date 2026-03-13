@@ -64,7 +64,7 @@ $(document).ready(function () {
         formData.append('content', processedContent);
         formData.append('imageArray', JSON.stringify(imageArray));
         formData.append('image_top', mainImageFile);
-        formData.append('_token', csrf); 
+        formData.append('_token', csrf); // assuming csrf is defined globally
 
         $submitBtn
             .prop('disabled', true)

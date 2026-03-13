@@ -111,7 +111,12 @@
           </div>
           
           
-            <div class="blog-post  py-5">
+          <div class="blog-post py-5" style="
+          white-space: pre-wrap;   /* preserve line breaks */
+          word-wrap: break-word;   /* old but widely supported */
+          overflow-wrap: break-word; /* modern standard for long words */
+          word-break: break-word;  /* force breaking long unbroken text */
+           ">
              {!!$content!!}    
             </div>
 
