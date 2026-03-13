@@ -68,7 +68,7 @@ $(document).ready(function () {
 
         $submitBtn
             .prop('disabled', true)
-            .text('Uploading...');
+            .text('...');
 
         $.ajax({
             url: urlcall, 
@@ -109,9 +109,11 @@ $(document).ready(function () {
                     .text('Upload Blog Post');
             }
         });
+
+        function generateUniqueIdentifier() {
+            return Date.now() + '_' + uniqueCounter++ + '_' + Math.floor(Math.random() * 10000);
+        }
     });
 
-    function generateUniqueIdentifier() {
-        return Date.now() + '_' + uniqueCounter++ + '_' + Math.floor(Math.random() * 10000);
-    }
+    
 });

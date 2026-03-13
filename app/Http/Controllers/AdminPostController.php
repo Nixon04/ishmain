@@ -21,6 +21,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
+use Intervention\Image\ImageManager;
+use Intervention\Image\Drivers\Gd\Driver;
+
 class AdminPostController extends Controller
 {
     //
@@ -158,62 +161,68 @@ class AdminPostController extends Controller
             $blog = Blog::where('reference_log', $request->reference_log)->firstOrFail();
             $newMainImagePath = $blog->image; // keep old one by default
 
-            $fileimage = $request->input('image_top');
 
             if ($request->hasFile('image_top') && $request->file('image_top')->isValid()) {
                 if ($blog->image) {
                     Storage::disk('public')->delete("blog_top_images/{$blog->image}");
-                }
-    
-                $newMainImagePath = time() . '_' . Str::random(10) . '.' .
-                    $request->file('image_top')->getClientOriginalExtension();
+                }     
 
-                    // $fileimage->storeAs('blog_top_images', $newMainImagePath, 'public');
-    
-                $request->file('image_top')->storeAs(
-                    'blog_top_images',
-                    $newMainImagePath,
-                    'public'
-                );
+                    $mainImage = $request->file('image_top');
+                    $manager = new ImageManager(new Driver());
+                    $image = $manager->read($mainImage)
+                        ->resize(1200, null);
+                    $mainFilename = time().'_'.Str::random(8).'.jpg';
+                    Storage::disk('public')->put(
+                        'blog_top_images/'.$mainFilename,
+                        $image->toJpeg(70)
+                    );
+
             }
-    
+
+
+        
         
             $newExtraImages = [];
             $oldExtraImages = $blog->extra_images ? json_decode($blog->extra_images, true) : [];
-    
+            
             if ($request->filled('imageArray')) {
+            
                 $imageArray = json_decode($request->input('imageArray'), true);
-    
+            
                 if (json_last_error() !== JSON_ERROR_NONE || !is_array($imageArray)) {
                     throw new \Exception('Invalid imageArray JSON format');
                 }
-    
+            
                 foreach ($imageArray as $item) {
+            
                     if (empty($item['filename']) || empty($item['fileContent'])) {
                         continue;
                     }
-    
+            
                     $binary = base64_decode($item['fileContent'], true);
                     if ($binary === false) {
-                        continue; 
+                        continue;
                     }
-    
+            
                     $safeName = $item['filename'];
                     $safeName = preg_replace('/[^a-zA-Z0-9._-]/', '_', $safeName);
-    
+            
+                    $image = $manager->read($binary)
+                        ->resize(1200, null); 
+            
                     Storage::disk('public')->put(
                         "blog_top_images/{$safeName}",
-                        $binary
+                        $image->toJpeg(70)
                     );
-    
+            
                     $newExtraImages[] = $safeName;
                 }
-    
+            
+                // delete old images
                 foreach ($oldExtraImages as $oldFile) {
                     Storage::disk('public')->delete("blog_top_images/{$oldFile}");
                 }
             }
-
     
             $blog->update([
                 'category'       => $request->category,
@@ -221,7 +230,7 @@ class AdminPostController extends Controller
                 'content_header' => $request->content_header,
                 'content'        => $request->input('content'),
                 'minutes_header' => $request->minutes_header ?? $blog->minutes_header,
-                'image'          => $newMainImagePath,
+                'image'          => $mainFilename,
                 'extra_images'   => json_encode($newExtraImages), 
                 'updated_date'   => now(),
             ]);
@@ -327,53 +336,66 @@ class AdminPostController extends Controller
     
             // 1. Handle main image
             $mainImage = $request->file('image_top');
-            $mainFilename = time() . '_' . Str::random(8) . '.' . $mainImage->getClientOriginalExtension();
-            $mainImage->storeAs('blog_top_images', $mainFilename, 'public');
-    
-            // 2. Handle additional images (base64)
-            $extraImages = [];
-            $imageArrayJson = $request->input('imageArray');
-    
-            if ($imageArrayJson) {
-                $imageArray = json_decode($imageArrayJson, true);
-    
-                if (json_last_error() !== JSON_ERROR_NONE || !is_array($imageArray)) {
-                    throw new \Exception('Invalid imageArray format.');
-                }
-    
-                $allowedMime = ['image/jpeg', 'image/png', 'image/gif'];
-                $maxSize = 10 * 1024 * 1024; // 10MB
-    
-                foreach ($imageArray as $item) {
-                    if (empty($item['filename']) || empty($item['fileContent'])) {
-                        continue;
-                    }
-    
-                    $binary = base64_decode($item['fileContent'], true);
-                    if ($binary === false) {
-                        throw new \Exception('Invalid base64 content in additional images.');
-                    }
-    
-                    $finfo = finfo_open(FILEINFO_MIME_TYPE);
-                    $mime = finfo_buffer($finfo, $binary);
-                    finfo_close($finfo);
-    
-                    if (!in_array($mime, $allowedMime)) {
-                        throw new \Exception('Only JPG, PNG, GIF allowed in additional images.');
-                    }
-    
-                    if (strlen($binary) > $maxSize) {
-                        throw new \Exception('Additional image exceeds 10MB limit.');
-                    }
-    
-                    $ext = pathinfo($item['filename'], PATHINFO_EXTENSION);
-                    $safeName = Str::random(12) . '.' . strtolower($ext);
-    
-                    Storage::put("public/blog_extra_images/{$safeName}", $binary);
-    
-                    $extraImages[] = $safeName;
-                }
-            }
+              $manager = new ImageManager(new Driver());
+              $image = $manager->read($mainImage)
+                  ->resize(1200, null);
+              $mainFilename = time().'_'.Str::random(8).'.jpg';
+              Storage::disk('public')->put(
+                  'blog_top_images/'.$mainFilename,
+                  $image->toJpeg(70)
+              );
+
+              $extraImages = [];
+              $imageArrayJson = $request->input('imageArray');
+              
+              if ($imageArrayJson) {
+              
+                  $imageArray = json_decode($imageArrayJson, true);
+              
+                  if (json_last_error() !== JSON_ERROR_NONE || !is_array($imageArray)) {
+                      throw new \Exception('Invalid imageArray format.');
+                  }
+              
+                  $allowedMime = ['image/jpeg', 'image/png', 'image/gif'];
+                  $maxSize = 10 * 1024 * 1024;
+              
+                  foreach ($imageArray as $item) {
+              
+                      if (empty($item['filename']) || empty($item['fileContent'])) {
+                          continue;
+                      }
+              
+                      $binary = base64_decode($item['fileContent'], true);
+                      if ($binary === false) {
+                          throw new \Exception('Invalid base64 content in additional images.');
+                      }
+              
+                      $finfo = finfo_open(FILEINFO_MIME_TYPE);
+                      $mime = finfo_buffer($finfo, $binary);
+                      finfo_close($finfo);
+              
+                      if (!in_array($mime, $allowedMime)) {
+                          throw new \Exception('Only JPG, PNG, GIF allowed.');
+                      }
+              
+                      if (strlen($binary) > $maxSize) {
+                          throw new \Exception('Additional image exceeds 10MB limit.');
+                      }
+              
+                      // read binary into Intervention
+                      $image = $manager->read($binary)
+                          ->resize(1200, null);
+              
+                      $safeName = $item['filename'];
+              
+                      Storage::disk('public')->put(
+                          "blog_top_images/{$safeName}",
+                          $image->toJpeg(70)
+                      );
+              
+                      $extraImages[] = $safeName;
+                  }
+              }
     
             $blog = Blog::create([
                 'user_id'        =>  $request->user()?->id ?? session('members_id'),
