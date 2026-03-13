@@ -81,12 +81,8 @@ class viewController extends Controller
            $url = Blog::where('title', $state)->first();
            if($url){
            $image_relates = $url->image;
-
-        //    $url = Url()->current();
-        //    $image_relate = route('blog_top_images', ['filename' => $image->image]);  
            
            $image_relate = route('blog_top_images', ['filename' => $image_relates]) ?? route('blog_top_images', ['filename' => 'demo.png']) ;
-           
            $content = $url->content;
            $title = $url->title;
            $sub_content = $url->sub_content;
