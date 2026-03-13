@@ -17,7 +17,7 @@
                 <div class="mb-3">
 
                 <label for="image-review" class="u-e-upload">Upload image</label> 
-                    <input type="file" image="*" id="image-review" alt="" hidden>
+                    <input type="file" image="*" id="image-review"  alt="" hidden>
                 </div>
 
                 <img src="#" id="imageview" alt="">
@@ -45,6 +45,7 @@
                  </div> 
 
                  <div class="title-description-container">
+                    <label for="label-description" class="mb-2">Description</label>
                     <textarea id="title-description-header" id="contents_details" class="textarea-fill"></textarea>
                     <span class="d-flex justify-content-end p-3">less than 150 words</span>
                  </div>

@@ -860,6 +860,15 @@ color:#247062;
     width: 40%;
     height: 150px!important;
 }
+
+#imageviews{
+    display: none;
+    cursor: pointer;
+    float:right;
+    width: 40%;
+    height: 150px!important;
+}
+
 .u-e-upload{
     background:#247062!important;
     cursor:pointer!important;

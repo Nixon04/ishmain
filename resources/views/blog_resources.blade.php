@@ -49,7 +49,6 @@
                           </div>
                    
                     <div class="content-header-flex">
-                         
                         <div class="row">
                           @foreach($blog_list as $entry)
                            <div class="col-lg-4 col-md-6 col-12 mb-3 blog-entry" data-category="{{$entry->category}}">
